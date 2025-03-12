@@ -1,21 +1,36 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using Soenneker.Extensions.ValueTask;
+using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
+using Soenneker.Utils.File.Abstract;
+using Soenneker.Utils.FileSync;
+using Soenneker.Utils.FileSync.Abstract;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text.Json;
 using System.Text.Json.Nodes;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Utils;
 
 public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
 {
+    private readonly IFileUtil _fileUtil;
+    private readonly ILogger<TelnyxOpenApiFixer> _logger;
+    private readonly IFileUtilSync _fileUtilSync;
+
+    public TelnyxOpenApiFixer(IFileUtil fileUtil, ILogger<TelnyxOpenApiFixer> logger, IFileUtilSync fileUtilSync)
+    {
+        _fileUtil = fileUtil;
+        _logger = logger;
+        _fileUtilSync = fileUtilSync;
+    }
+
     public async ValueTask Fix(string sourceFilePath, string targetFilePath, CancellationToken cancellationToken = default)
     {
-        string json = await File.ReadAllTextAsync(sourceFilePath, cancellationToken);
+        string json = await _fileUtil.Read(sourceFilePath, cancellationToken).NoSync();
+
         JsonNode openApi = JsonNode.Parse(json);
 
         // Fix duplicate operationIds
@@ -35,15 +50,13 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         FixInvalidComponentNames(openApi["components"]);
 
         // Ensure default values exist in enums
-        if (openApi["components"] is JsonObject components &&
-            components.TryGetPropertyValue("schemas", out JsonNode schemasNode))
+        if (openApi["components"] is JsonObject components && components.TryGetPropertyValue("schemas", out JsonNode schemasNode))
         {
             EnsureDefaultInEnum(schemasNode);
         }
 
         // Fix ENUM NAMES FOR KIOTA
-        if (openApi["components"] is JsonObject components2 &&
-            components2.TryGetPropertyValue("schemas", out JsonNode schemasNode2))
+        if (openApi["components"] is JsonObject components2 && components2.TryGetPropertyValue("schemas", out JsonNode schemasNode2))
         {
             FixEnumNames(schemasNode2);
         }
@@ -56,27 +69,24 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
 
         FixActionsParticipantsRequestParticipants(openApi);
 
-        // Save the corrected OpenAPI spec
-        await File.WriteAllTextAsync(targetFilePath, openApi.ToJsonString(new JsonSerializerOptions { WriteIndented = true }), cancellationToken);
+        _fileUtilSync.DeleteIfExists(targetFilePath);
 
-        Console.WriteLine($"OpenAPI spec fixed and saved as {targetFilePath}");
+        await _fileUtil.Write(targetFilePath, openApi.ToJsonString(new JsonSerializerOptions {WriteIndented = true}), cancellationToken);
+
+        _logger.LogInformation($"OpenAPI spec fixed and saved as {targetFilePath}");
     }
 
     private static void FixActionsParticipantsRequestParticipants(JsonNode openApi)
     {
-        if (openApi["components"] is JsonObject components &&
-            components["schemas"] is JsonObject schemas &&
+        if (openApi["components"] is JsonObject components && components["schemas"] is JsonObject schemas &&
             schemas.TryGetPropertyValue("ActionsParticipantsRequest", out JsonNode actionsParticipantsSchema) &&
             actionsParticipantsSchema is JsonObject actionsParticipants)
         {
-            if (actionsParticipants.TryGetPropertyValue("properties", out JsonNode propertiesNode) &&
-                propertiesNode is JsonObject properties &&
-                properties.TryGetPropertyValue("participants", out JsonNode participantsNode) &&
-                participantsNode is JsonObject participants)
+            if (actionsParticipants.TryGetPropertyValue("properties", out JsonNode propertiesNode) && propertiesNode is JsonObject properties &&
+                properties.TryGetPropertyValue("participants", out JsonNode participantsNode) && participantsNode is JsonObject participants)
             {
                 // Remove any existing `oneOf` definition.
-                if (participants.TryGetPropertyValue("oneOf", out JsonNode oneOfNode) &&
-                    oneOfNode is JsonArray)
+                if (participants.TryGetPropertyValue("oneOf", out JsonNode oneOfNode) && oneOfNode is JsonArray)
                 {
                     participants.AsObject().Remove("oneOf");
                 }
@@ -92,16 +102,15 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
     }
 
 
-
     private static void FixDuplicateOperationIds(JsonNode node, HashSet<string> seen)
     {
         if (node is JsonObject obj)
         {
-            foreach (var prop in obj.ToList())
+            foreach (KeyValuePair<string, JsonNode?> prop in obj.ToList())
             {
                 if (prop.Key == "operationId" && prop.Value != null)
                 {
-                    string id = prop.Value.ToString();
+                    var id = prop.Value.ToString();
                     if (seen.Contains(id))
                     {
                         obj[prop.Key] = id + "_fixed";
@@ -111,12 +120,13 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
                         seen.Add(id);
                     }
                 }
+
                 FixDuplicateOperationIds(prop.Value, seen);
             }
         }
         else if (node is JsonArray arr)
         {
-            foreach (var element in arr)
+            foreach (JsonNode? element in arr)
             {
                 FixDuplicateOperationIds(element, seen);
             }
@@ -127,7 +137,7 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
     {
         if (node is JsonObject obj)
         {
-            foreach (var prop in obj.ToList())
+            foreach (KeyValuePair<string, JsonNode?> prop in obj.ToList())
             {
                 if (prop.Key == "delete" && prop.Value is JsonObject deleteOp)
                 {
@@ -136,12 +146,13 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
                         deleteOp.AsObject().Remove("requestBody");
                     }
                 }
+
                 RemoveRequestBodyFromDelete(prop.Value);
             }
         }
         else if (node is JsonArray arr)
         {
-            foreach (var element in arr)
+            foreach (JsonNode? element in arr)
             {
                 RemoveRequestBodyFromDelete(element);
             }
@@ -152,23 +163,24 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
     {
         if (node is JsonObject obj)
         {
-            foreach (var prop in obj.ToList())
+            foreach (KeyValuePair<string, JsonNode?> prop in obj.ToList())
             {
                 if (prop.Key == "$ref" && prop.Value != null)
                 {
-                    string refValue = prop.Value.ToString();
+                    var refValue = prop.Value.ToString();
                     if (refValue.Contains(">") || refValue.Contains("<"))
                     {
                         string fixedRef = refValue.Replace(">", "").Replace("<", "");
                         obj[prop.Key] = fixedRef;
                     }
                 }
+
                 FixInvalidRef(prop.Value);
             }
         }
         else if (node is JsonArray arr)
         {
-            foreach (var element in arr)
+            foreach (JsonNode? element in arr)
             {
                 FixInvalidRef(element);
             }
@@ -179,7 +191,7 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
     {
         if (pathsNode is JsonObject pathsObj)
         {
-            foreach (var pathProp in pathsObj.ToList())
+            foreach (KeyValuePair<string, JsonNode?> pathProp in pathsObj.ToList())
             {
                 if (pathProp.Key.Contains("{siprec_sid}") && pathProp.Value is JsonObject pathObj)
                 {
@@ -187,13 +199,15 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
                     {
                         pathObj["parameters"] = new JsonArray();
                     }
-                    var parametersArray = pathObj["parameters"].AsArray();
+
+                    JsonArray parametersArray = pathObj["parameters"].AsArray();
                     bool hasSiprec = parametersArray.Any(param =>
                     {
                         if (param is JsonObject paramObj && paramObj.TryGetPropertyValue("name", out JsonNode nameNode))
                         {
                             return nameNode.ToString() == "siprec_sid";
                         }
+
                         return false;
                     });
                     if (!hasSiprec)
@@ -203,7 +217,7 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
                             ["name"] = "siprec_sid",
                             ["in"] = "path",
                             ["required"] = true,
-                            ["schema"] = new JsonObject { ["type"] = "string" }
+                            ["schema"] = new JsonObject {["type"] = "string"}
                         };
                         parametersArray.Add(newParam);
                     }
@@ -218,12 +232,12 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         {
             if (compObj.TryGetPropertyValue("parameters", out JsonNode parametersNode) && parametersNode is JsonObject compParams)
             {
-                foreach (var prop in compParams.ToList())
+                foreach (KeyValuePair<string, JsonNode?> prop in compParams.ToList())
                 {
                     if (prop.Key.Contains(">") || prop.Key.Contains("<"))
                     {
                         string fixedName = prop.Key.Replace(">", "").Replace("<", "");
-                        var clone = prop.Value?.DeepClone(); // Clone the node to avoid re-parenting errors.
+                        JsonNode? clone = prop.Value?.DeepClone(); // Clone the node to avoid re-parenting errors.
                         compParams.Remove(prop.Key);
                         compParams[fixedName] = clone;
                     }
@@ -239,21 +253,22 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         {
             if (obj.ContainsKey("default") && obj.ContainsKey("enum") && obj["enum"] is JsonArray enumArray)
             {
-                string defaultVal = obj["default"]?.ToString();
-                var enumValues = enumArray.Select(x => x.ToString()).ToList();
+                var defaultVal = obj["default"]?.ToString();
+                List<string> enumValues = enumArray.Select(x => x.ToString()).ToList();
                 if (!enumValues.Contains(defaultVal) && enumValues.Any())
                 {
                     obj["default"] = enumValues.First();
                 }
             }
-            foreach (var prop in obj)
+
+            foreach (KeyValuePair<string, JsonNode?> prop in obj)
             {
                 EnsureDefaultInEnum(prop.Value);
             }
         }
         else if (node is JsonArray arr)
         {
-            foreach (var element in arr)
+            foreach (JsonNode? element in arr)
             {
                 EnsureDefaultInEnum(element);
             }
@@ -264,13 +279,11 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
     {
         if (node is JsonObject obj)
         {
-            foreach (var prop in obj.ToList())
+            foreach (KeyValuePair<string, JsonNode?> prop in obj.ToList())
             {
                 if (prop.Key == "enum" && prop.Value is JsonArray enumArray)
                 {
-                    var enumValues = enumArray.Select(x => x.ToString())
-                                              .Where(s => !string.IsNullOrWhiteSpace(s))
-                                              .ToList();
+                    List<string> enumValues = enumArray.Select(x => x.ToString()).Where(s => !string.IsNullOrWhiteSpace(s)).ToList();
                     if (enumValues.Count == 0)
                         continue;
                     List<string> enumVarNames = new List<string>();
@@ -282,13 +295,15 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
                         {
                             fixedName = "_" + fixedName;
                         }
+
                         enumVarNames.Add(fixedName);
                         fixedEnumValues.Add(originalValue.Replace("\"", ""));
                     }
+
                     if (enumVarNames.Count > 0)
                     {
-                        obj["enum"] = new JsonArray(fixedEnumValues.Select(v => (JsonNode)v).ToArray());
-                        obj["x-enum-varnames"] = new JsonArray(enumVarNames.Select(n => (JsonNode)n).ToArray());
+                        obj["enum"] = new JsonArray(fixedEnumValues.Select(v => (JsonNode) v).ToArray());
+                        obj["x-enum-varnames"] = new JsonArray(enumVarNames.Select(n => (JsonNode) n).ToArray());
                     }
                 }
                 else
@@ -299,7 +314,7 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         }
         else if (node is JsonArray arr)
         {
-            foreach (var element in arr)
+            foreach (JsonNode? element in arr)
             {
                 FixEnumNames(element);
             }
@@ -308,23 +323,20 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
 
     private static void FixAuditEventChanges(JsonNode root)
     {
-        if (root["components"] is JsonObject components &&
-            components["schemas"] is JsonObject schemas &&
-            schemas["AuditEventChanges"] is JsonObject audit &&
+        if (root["components"] is JsonObject components && components["schemas"] is JsonObject schemas && schemas["AuditEventChanges"] is JsonObject audit &&
             audit["properties"] is JsonObject properties)
         {
-            foreach (var prop in properties.ToList())
+            foreach (KeyValuePair<string, JsonNode?> prop in properties.ToList())
             {
-                if (prop.Value is JsonObject propertyObj &&
-                    propertyObj.TryGetPropertyValue("anyOf", out JsonNode anyOfNode) &&
+                if (prop.Value is JsonObject propertyObj && propertyObj.TryGetPropertyValue("anyOf", out JsonNode anyOfNode) &&
                     anyOfNode is JsonArray anyOfArray)
                 {
-                    foreach (var item in anyOfArray)
+                    foreach (JsonNode? item in anyOfArray)
                     {
                         if (item is JsonObject itemObj && itemObj.TryGetPropertyValue("type", out JsonNode typeNode))
                         {
-                            string typeStr = typeNode.ToString();
-                            var allowed = new[] { "array", "boolean", "integer", "number", "object", "string" };
+                            var typeStr = typeNode.ToString();
+                            var allowed = new[] {"array", "boolean", "integer", "number", "object", "string"};
                             if (!allowed.Contains(typeStr))
                             {
                                 itemObj["type"] = "string";
@@ -338,9 +350,7 @@ public class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
 
     private static void FixHangupToolParams(JsonNode root)
     {
-        if (root["components"] is JsonObject components &&
-            components["schemas"] is JsonObject schemas &&
-            schemas["HangupToolParams"] is JsonObject hangup &&
+        if (root["components"] is JsonObject components && components["schemas"] is JsonObject schemas && schemas["HangupToolParams"] is JsonObject hangup &&
             hangup["required"] is JsonArray requiredArray)
         {
             if (requiredArray.Count == 0)

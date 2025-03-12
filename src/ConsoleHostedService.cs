@@ -42,13 +42,7 @@ public class ConsoleHostedService : IHostedService
 
                 try
                 {
-                    string? filePath = await _fileDownloadUtil.Download("https://raw.githubusercontent.com/team-telnyx/openapi/refs/heads/master/openapi/spec3.json", fileExtension: ".json", cancellationToken: cancellationToken);
-
-                    string fixedFilePath = Path.Combine(Path.GetTempPath(), "fixed.json");
-
-                    await _telnyxOpenApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
-
-                    await _fileOperationsUtil.Process(fixedFilePath, cancellationToken);
+                    await _fileOperationsUtil.Process(cancellationToken);
 
                     _logger.LogInformation("Complete!");
 
