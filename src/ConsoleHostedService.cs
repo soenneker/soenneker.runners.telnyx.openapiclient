@@ -1,11 +1,8 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Soenneker.Extensions.ValueTask;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
-using Soenneker.Utils.File.Download.Abstract;
 using System;
 using System.Diagnostics;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -16,19 +13,14 @@ public class ConsoleHostedService : IHostedService
     private readonly ILogger<ConsoleHostedService> _logger;
 
     private readonly IHostApplicationLifetime _appLifetime;
-    private readonly IFileDownloadUtil _fileDownloadUtil;
-    private readonly ITelnyxOpenApiFixer _telnyxOpenApiFixer;
     private readonly IFileOperationsUtil _fileOperationsUtil;
 
     private int? _exitCode;
 
-    public ConsoleHostedService(ILogger<ConsoleHostedService> logger, IHostApplicationLifetime appLifetime,
-        IFileDownloadUtil fileDownloadUtil, ITelnyxOpenApiFixer telnyxOpenApiFixer, IFileOperationsUtil fileOperationsUtil)
+    public ConsoleHostedService(ILogger<ConsoleHostedService> logger, IHostApplicationLifetime appLifetime, IFileOperationsUtil fileOperationsUtil)
     {
         _logger = logger;
         _appLifetime = appLifetime;
-        _fileDownloadUtil = fileDownloadUtil;
-        _telnyxOpenApiFixer = telnyxOpenApiFixer;
         _fileOperationsUtil = fileOperationsUtil;
     }
 

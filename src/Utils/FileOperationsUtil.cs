@@ -64,7 +64,7 @@ public class FileOperationsUtil : IFileOperationsUtil
 
         DeleteAllExceptCsproj(srcDirectory);
 
-        await _processUtil.Start("kiota", gitDirectory, $"kiota generate -l CSharp -d \"{fixedFilePath}\" -o src -c TelnyxOpenApiClient -n Soenneker.Telnyx",
+        await _processUtil.Start("kiota", gitDirectory, $"kiota generate -l CSharp -d \"{fixedFilePath}\" -o src -c TelnyxOpenApiClient -n {Constants.Library}",
             waitForExit: true, cancellationToken: cancellationToken).NoSync();
 
         await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
