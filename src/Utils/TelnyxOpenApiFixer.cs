@@ -217,6 +217,16 @@ public sealed class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         await ReadAndValidateOpenApi(targetFilePath);
     }
 
+    private static string TrimQuotes(string value)
+    {
+        if (value.Length >= 2 &&
+            ((value.StartsWith("\"") && value.EndsWith("\"")) ||
+             (value.StartsWith("'") && value.EndsWith("'"))))
+        {
+            return value.Substring(1, value.Length - 2);
+        }
+        return value;
+    }
 
     /// <summary>
     /// Remove any default values whose CLR type doesn't match the schema.Type.
@@ -509,6 +519,7 @@ public sealed class TelnyxOpenApiFixer : ITelnyxOpenApiFixer
         {
             var cleanedEnum = schema.Enum.OfType<OpenApiString>()
                                     .Where(s => !string.IsNullOrEmpty(s.Value)) // Keep only non-empty strings
+                                    .Select(s => new OpenApiString(TrimQuotes(s.Value)))
                                     .Cast<IOpenApiAny>()
                                     .ToList();
 
