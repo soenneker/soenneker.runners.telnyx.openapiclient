@@ -1,5 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
 using Soenneker.Managers.Runners.Registrars;
+using Soenneker.OpenApi.Fixer.Registrars;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Soenneker.Utils.File.Download.Registrars;
@@ -19,11 +20,11 @@ public static class Startup
 
     public static IServiceCollection SetupIoC(this IServiceCollection services)
     {
-        services.AddHostedService<ConsoleHostedService>();
-        services.AddScoped<IFileOperationsUtil, FileOperationsUtil>();
-        services.AddRunnersManagerAsScoped();
-        services.AddFileDownloadUtilAsScoped();
-        services.AddScoped<ITelnyxOpenApiFixer, TelnyxOpenApiFixer>();
+        services.AddHostedService<ConsoleHostedService>()
+                .AddScoped<IFileOperationsUtil, FileOperationsUtil>()
+                .AddRunnersManagerAsScoped()
+                .AddFileDownloadUtilAsScoped()
+                .AddOpenApiFixerAsScoped();
 
         return services;
     }

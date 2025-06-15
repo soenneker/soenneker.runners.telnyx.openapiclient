@@ -1,5 +1,5 @@
 ﻿using Soenneker.Facts.Local;
-using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
+using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Tests.FixturedUnit;
 using System.Threading.Tasks;
 using Xunit;
@@ -22,7 +22,7 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
     [LocalFact]
     public async ValueTask Fix()
     {
-        var fixer = Resolve<ITelnyxOpenApiFixer>(true);
+        var fixer = Resolve<IOpenApiFixer>(true);
 
         await fixer.Fix("c:\\telnyx\\spec3.json", "c:\\telnyx\\fixed.json");
     }

@@ -15,29 +15,30 @@ using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Download.Abstract;
 using Soenneker.Utils.FileSync.Abstract;
 using System.Collections.Generic;
+using Soenneker.OpenApi.Fixer.Abstract;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Utils;
 
 ///<inheritdoc cref="IFileOperationsUtil"/>
-public class FileOperationsUtil : IFileOperationsUtil
+public sealed class FileOperationsUtil : IFileOperationsUtil
 {
     private readonly ILogger<FileOperationsUtil> _logger;
     private readonly IGitUtil _gitUtil;
     private readonly IDotnetUtil _dotnetUtil;
     private readonly IProcessUtil _processUtil;
-    private readonly ITelnyxOpenApiFixer _telnyxOpenApiFixer;
+    private readonly IOpenApiFixer _openApiFixer;
     private readonly IFileDownloadUtil _fileDownloadUtil;
     private readonly IFileUtilSync _fileUtilSync;
     private readonly IFileUtil _fileUtil;
 
     public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IProcessUtil processUtil,
-        ITelnyxOpenApiFixer telnyxOpenApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtilSync fileUtilSync, IFileUtil fileUtil)
+        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtilSync fileUtilSync, IFileUtil fileUtil)
     {
         _logger = logger;
         _gitUtil = gitUtil;
         _dotnetUtil = dotnetUtil;
         _processUtil = processUtil;
-        _telnyxOpenApiFixer = telnyxOpenApiFixer;
+        _openApiFixer = openApiFixer;
         _fileDownloadUtil = fileDownloadUtil;
         _fileUtilSync = fileUtilSync;
         _fileUtil = fileUtil;
@@ -58,7 +59,7 @@ public class FileOperationsUtil : IFileOperationsUtil
 
         string fixedFilePath = Path.Combine(gitDirectory, "fixed.json");
 
-        await _telnyxOpenApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
+        await _openApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
 
         string srcDirectory = Path.Combine(gitDirectory, "src");
 
