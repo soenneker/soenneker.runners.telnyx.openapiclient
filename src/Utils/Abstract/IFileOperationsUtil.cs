@@ -6,4 +6,6 @@ namespace Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 public interface IFileOperationsUtil
 {
     ValueTask Process(CancellationToken cancellationToken = default);
+
+    void DeleteAllExceptCsproj(string directoryPath, bool log = true);
 }

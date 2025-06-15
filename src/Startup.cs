@@ -4,6 +4,7 @@ using Soenneker.OpenApi.Fixer.Registrars;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Soenneker.Utils.File.Download.Registrars;
+using Soenneker.Utils.Usings.Registrars;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient;
 
@@ -24,7 +25,8 @@ public static class Startup
                 .AddScoped<IFileOperationsUtil, FileOperationsUtil>()
                 .AddRunnersManagerAsScoped()
                 .AddFileDownloadUtilAsScoped()
-                .AddOpenApiFixerAsScoped();
+                .AddOpenApiFixerAsScoped()
+                .AddUsingsUtilAsScoped();
 
         return services;
     }

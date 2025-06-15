@@ -1,21 +1,22 @@
 ﻿using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.String;
+using Soenneker.Extensions.ValueTask;
 using Soenneker.Git.Util.Abstract;
+using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Soenneker.Utils.Dotnet.Abstract;
 using Soenneker.Utils.Environment;
+using Soenneker.Utils.File.Abstract;
+using Soenneker.Utils.File.Download.Abstract;
+using Soenneker.Utils.FileSync.Abstract;
 using Soenneker.Utils.Process.Abstract;
+using Soenneker.Utils.Usings.Abstract;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Soenneker.Extensions.ValueTask;
-using Soenneker.Utils.File.Abstract;
-using Soenneker.Utils.File.Download.Abstract;
-using Soenneker.Utils.FileSync.Abstract;
-using System.Collections.Generic;
-using Soenneker.OpenApi.Fixer.Abstract;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Utils;
 
@@ -30,9 +31,10 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     private readonly IFileDownloadUtil _fileDownloadUtil;
     private readonly IFileUtilSync _fileUtilSync;
     private readonly IFileUtil _fileUtil;
+    private readonly IUsingsUtil _usingsUtil;
 
     public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IProcessUtil processUtil,
-        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtilSync fileUtilSync, IFileUtil fileUtil)
+        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtilSync fileUtilSync, IFileUtil fileUtil, IUsingsUtil usingsUtil)
     {
         _logger = logger;
         _gitUtil = gitUtil;
@@ -42,6 +44,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         _fileDownloadUtil = fileDownloadUtil;
         _fileUtilSync = fileUtilSync;
         _fileUtil = fileUtil;
+        _usingsUtil = usingsUtil;
     }
 
     public async ValueTask Process(CancellationToken cancellationToken = default)
@@ -70,6 +73,14 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
+        string projFilePath = Path.Combine(gitDirectory, "src", $"{Constants.Library}.csproj");
+
+        await _dotnetUtil.Restore(projFilePath, cancellationToken: cancellationToken);
+
+        await _usingsUtil.AddMissing(projFilePath, true, 5, cancellationToken);
+
+        GuidPatternFixer.FixDirectory(srcDirectory);
+
         await BuildAndPush(gitDirectory, cancellationToken).NoSync();
     }
 
@@ -94,7 +105,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         }
 
         string filePath = files[0]; // Assuming only one Loopcount.cs file
-        List<string> lines = await _fileUtil.ReadAsLines(filePath, cancellationToken);
+        List<string> lines = await _fileUtil.ReadAsLines(filePath, true, cancellationToken);
 
         // Check if any required namespaces are missing
         bool needsUpdate = requiredNamespaces.Any(ns => !lines.Contains(ns));
@@ -104,7 +115,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
             _logger.LogInformation("Updating namespaces in {FilePath}...", filePath);
             string updatedContent = string.Join(Environment.NewLine, requiredNamespaces) + Environment.NewLine + string.Join(Environment.NewLine, lines);
 
-            await _fileUtil.Write(filePath, updatedContent, cancellationToken);
+            await _fileUtil.Write(filePath, updatedContent, true, cancellationToken);
 
             _logger.LogInformation("Namespaces added successfully to {FilePath}.", filePath);
         }
@@ -114,7 +125,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         }
     }
 
-    public void DeleteAllExceptCsproj(string directoryPath)
+    public void DeleteAllExceptCsproj(string directoryPath, bool log = true)
     {
         if (!Directory.Exists(directoryPath))
         {
@@ -132,7 +143,8 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
                     try
                     {
                         File.Delete(file);
-                        _logger.LogInformation("Deleted file: {FilePath}", file);
+                        if (log)
+                            _logger.LogInformation("Deleted file: {FilePath}", file);
                     }
                     catch (Exception ex)
                     {
@@ -150,7 +162,8 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
                     if (Directory.Exists(dir) && !Directory.EnumerateFileSystemEntries(dir).Any())
                     {
                         Directory.Delete(dir, recursive: false);
-                        _logger.LogInformation("Deleted empty directory: {DirectoryPath}", dir);
+                        if (log)
+                            _logger.LogInformation("Deleted empty directory: {DirectoryPath}", dir);
                     }
                 }
                 catch (Exception ex)
