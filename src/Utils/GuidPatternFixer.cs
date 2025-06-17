@@ -13,13 +13,13 @@ public static class GuidPatternFixer
     public static void FixDirectory(string srcRoot)
     {
         if (!Directory.Exists(srcRoot)) return;
-        foreach (var path in Directory.GetFiles(srcRoot, "*.cs", SearchOption.AllDirectories))
+        foreach (string path in Directory.GetFiles(srcRoot, "*.cs", SearchOption.AllDirectories))
         {
-            var text = File.ReadAllText(path);
-            var tree = CSharpSyntaxTree.ParseText(text);
-            var root = tree.GetRoot();
+            string text = File.ReadAllText(path);
+            SyntaxTree tree = CSharpSyntaxTree.ParseText(text);
+            SyntaxNode root = tree.GetRoot();
             var rewriter = new PatternRewriter();
-            var newRoot = rewriter.Visit(root);
+            SyntaxNode newRoot = rewriter.Visit(root);
             if (!newRoot.IsEquivalentTo(root))
                 File.WriteAllText(path, newRoot.ToFullString());
         }
@@ -34,8 +34,8 @@ public static class GuidPatternFixer
                 gns.TypeArgumentList.Arguments.Count == 1 && gns.TypeArgumentList.Arguments[0].ToString() == "Guid")
             {
                 // replace with List<Guid?>
-                var newType = SyntaxFactory.ParseTypeName("List<Guid?>").WithTriviaFrom(gns);
-                var newDp = dp.WithType(newType);
+                TypeSyntax newType = SyntaxFactory.ParseTypeName("List<Guid?>").WithTriviaFrom(gns);
+                DeclarationPatternSyntax newDp = dp.WithType(newType);
                 return node.WithPattern(newDp);
             }
 

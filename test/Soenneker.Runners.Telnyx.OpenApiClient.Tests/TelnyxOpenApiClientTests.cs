@@ -42,10 +42,10 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
 
        // fileSyncUtil.DeleteAll(@"c:\telnyx\src", false);
 
-        var processUtil = Resolve<IProcessUtil>(true);
+       // var processUtil = Resolve<IProcessUtil>(true);
 
-        await processUtil.Start("kiota", @"c:\telnyx\", $"kiota generate -l CSharp -d \"fixed.json\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --clean-output --clear-cache",
-            waitForExit: true, cancellationToken: CancellationToken).NoSync();
+      //  await processUtil.Start("kiota", @"c:\telnyx\", $"kiota generate -l CSharp -d \"fixed.json\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --clean-output --clear-cache",
+      //      waitForExit: true, cancellationToken: CancellationToken).NoSync();
 
     }
 
