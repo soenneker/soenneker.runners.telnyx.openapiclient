@@ -58,8 +58,6 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         string? filePath = await _fileDownloadUtil.Download("https://raw.githubusercontent.com/team-telnyx/openapi/refs/heads/master/openapi/spec3.json",
             targetFilePath, fileExtension: ".json", cancellationToken: cancellationToken);
 
-        await _processUtil.Start("dotnet", null, "tool update --global Microsoft.OpenApi.Kiota", waitForExit: true, cancellationToken: cancellationToken);
-
         string fixedFilePath = Path.Combine(gitDirectory, "fixed.json");
 
         await _openApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
@@ -67,6 +65,8 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         string srcDirectory = Path.Combine(gitDirectory, "src");
 
         DeleteAllExceptCsproj(srcDirectory);
+
+        await _processUtil.Start("dotnet", null, "tool update --global Microsoft.OpenApi.Kiota", waitForExit: true, cancellationToken: cancellationToken);
 
         await _processUtil.Start("kiota", gitDirectory, $"kiota generate -l CSharp -d \"{fixedFilePath}\" -o src -c TelnyxOpenApiClient -n {Constants.Library}",
             waitForExit: true, cancellationToken: cancellationToken).NoSync();
