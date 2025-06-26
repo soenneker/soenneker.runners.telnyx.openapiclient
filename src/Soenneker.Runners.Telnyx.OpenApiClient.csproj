@@ -52,7 +52,7 @@
         <PackageReference Include="Soenneker.Utils.File" Version="3.0.1947" />
         <PackageReference Include="Soenneker.Utils.File.Download" Version="3.0.1204" />
         <PackageReference Include="Soenneker.Utils.FileSync" Version="3.0.1788" />
-        <PackageReference Include="Soenneker.Utils.Usings" Version="3.0.33" />
+        <PackageReference Include="Soenneker.Utils.Usings" Version="3.0.34" />
     </ItemGroup>
 
 
