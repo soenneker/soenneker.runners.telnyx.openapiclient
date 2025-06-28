@@ -50,7 +50,7 @@
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="3.0.9" />
         <PackageReference Include="Soenneker.Utils.File" Version="3.0.1947" />
         <PackageReference Include="Soenneker.Utils.File.Download" Version="3.0.1205" />
-        <PackageReference Include="Soenneker.Utils.FileSync" Version="3.0.1791" />
+        <PackageReference Include="Soenneker.Utils.FileSync" Version="3.0.1792" />
         <PackageReference Include="Soenneker.Utils.Usings" Version="3.0.35" />
     </ItemGroup>
 
