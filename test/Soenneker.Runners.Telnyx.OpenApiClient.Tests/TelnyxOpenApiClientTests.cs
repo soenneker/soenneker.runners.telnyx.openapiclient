@@ -34,8 +34,6 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
 
         await fixer.Fix("c:\\telnyx\\spec3.json", "c:\\telnyx\\fixed.json");
 
-       // fileSyncUtil.DeleteAll(@"c:\telnyx\src", false);
-
        // var processUtil = Resolve<IProcessUtil>(true);
 
       //  await processUtil.Start("kiota", @"c:\telnyx\", $"kiota generate -l CSharp -d \"fixed.json\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --clean-output --clear-cache",
