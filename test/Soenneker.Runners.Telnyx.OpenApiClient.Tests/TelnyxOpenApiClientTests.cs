@@ -2,7 +2,6 @@
 using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Tests.FixturedUnit;
 using Soenneker.Utils.File.Abstract;
-using Soenneker.Utils.FileSync.Abstract;
 using System.Threading.Tasks;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Xunit;
@@ -28,8 +27,6 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
     public async ValueTask Fix()
     {
         var fixer = Resolve<IOpenApiFixer>(true);
-
-        var fileSyncUtil = Resolve<IFileUtilSync>(true);
 
         var fileOperationsUtil = Resolve<IFileOperationsUtil>(true);
 
