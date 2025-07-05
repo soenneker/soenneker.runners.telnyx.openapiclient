@@ -8,7 +8,6 @@ using Soenneker.Utils.Dotnet.Abstract;
 using Soenneker.Utils.Environment;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Download.Abstract;
-using Soenneker.Utils.FileSync.Abstract;
 using Soenneker.Utils.Process.Abstract;
 using Soenneker.Utils.Usings.Abstract;
 using System;
@@ -29,12 +28,11 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     private readonly IProcessUtil _processUtil;
     private readonly IOpenApiFixer _openApiFixer;
     private readonly IFileDownloadUtil _fileDownloadUtil;
-    private readonly IFileUtilSync _fileUtilSync;
     private readonly IFileUtil _fileUtil;
     private readonly IUsingsUtil _usingsUtil;
 
     public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IProcessUtil processUtil,
-        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtilSync fileUtilSync, IFileUtil fileUtil, IUsingsUtil usingsUtil)
+        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtil fileUtil, IUsingsUtil usingsUtil)
     {
         _logger = logger;
         _gitUtil = gitUtil;
@@ -42,7 +40,6 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         _processUtil = processUtil;
         _openApiFixer = openApiFixer;
         _fileDownloadUtil = fileDownloadUtil;
-        _fileUtilSync = fileUtilSync;
         _fileUtil = fileUtil;
         _usingsUtil = usingsUtil;
     }
@@ -54,7 +51,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         string targetFilePath = Path.Combine(gitDirectory, "spec3.json");
 
-        _fileUtilSync.DeleteIfExists(targetFilePath);
+        await _fileUtil.DeleteIfExists(targetFilePath, cancellationToken: cancellationToken);
 
         string? filePath = await _fileDownloadUtil.Download("https://raw.githubusercontent.com/team-telnyx/openapi/refs/heads/master/openapi/spec3.json",
             targetFilePath, fileExtension: ".json", cancellationToken: cancellationToken);
