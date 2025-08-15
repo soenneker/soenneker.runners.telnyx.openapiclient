@@ -66,7 +66,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _processUtil.Start("dotnet", null, "tool update --global Microsoft.OpenApi.Kiota", waitForExit: true, cancellationToken: cancellationToken);
 
-        await _processUtil.Start("kiota", gitDirectory, $"kiota generate -l CSharp -d \"{fixedFilePath}\" -o src -c TelnyxOpenApiClient -n {Constants.Library}",
+        await _processUtil.Start("kiota", gitDirectory, $"kiota generate -l CSharp -d \"{fixedFilePath}\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --ebc --cc",
                               waitForExit: true, cancellationToken: cancellationToken)
                           .NoSync();
 
