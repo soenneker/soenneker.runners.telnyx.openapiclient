@@ -48,7 +48,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="9.0.9" />
         <PackageReference Include="Soenneker.Managers.Runners" Version="3.0.1325" />
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="3.0.36" />
-        <PackageReference Include="Soenneker.Utils.File.Download" Version="3.0.1261" />
+        <PackageReference Include="Soenneker.Utils.File.Download" Version="3.0.1262" />
         <PackageReference Include="Soenneker.Utils.Usings" Version="3.0.60" />
     </ItemGroup>
 </Project>
