@@ -3,6 +3,7 @@ using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Tests.FixturedUnit;
 using Soenneker.Utils.File.Abstract;
 using System.Threading.Tasks;
+using Soenneker.Facts.Manual;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Xunit;
 
@@ -13,17 +14,15 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
 {
     public TelnyxOpenApiClientTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
     {
-
-
     }
 
     [Fact]
     public void Default()
     {
-
     }
 
-    [LocalFact]
+    [ManualFact]
+    // [LocalFact]
     public async ValueTask Fix()
     {
         var fixer = Resolve<IOpenApiFixer>(true);
@@ -34,11 +33,9 @@ public class TelnyxOpenApiClientTests : FixturedUnitTest
 
         await fixer.Fix("c:\\telnyx\\spec3.json", "c:\\telnyx\\fixed.json");
 
-       // var processUtil = Resolve<IProcessUtil>(true);
+        // var processUtil = Resolve<IProcessUtil>(true);
 
-      //  await processUtil.Start("kiota", @"c:\telnyx\", $"kiota generate -l CSharp -d \"fixed.json\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --clean-output --clear-cache",
-      //      waitForExit: true, cancellationToken: CancellationToken).NoSync();
-
+        //  await processUtil.Start("kiota", @"c:\telnyx\", $"kiota generate -l CSharp -d \"fixed.json\" -o src -c TelnyxOpenApiClient -n {Constants.Library} --clean-output --clear-cache",
+        //      waitForExit: true, cancellationToken: CancellationToken).NoSync();
     }
-
 }
