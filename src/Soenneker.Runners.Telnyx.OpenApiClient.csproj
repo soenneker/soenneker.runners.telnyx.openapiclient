@@ -48,7 +48,7 @@
         <PackageReference Include="Soenneker.Managers.Runners" Version="4.0.1590" />
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.87" />
         <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1360" />
-        <PackageReference Include="Soenneker.Utils.Usings" Version="4.0.121" />
+        <PackageReference Include="Soenneker.Utils.Usings" Version="4.0.123" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.0.2" ExcludeAssets="runtime" PrivateAssets="all">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
