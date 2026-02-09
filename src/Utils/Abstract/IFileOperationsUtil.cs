@@ -1,4 +1,4 @@
-﻿using System.Threading;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
@@ -7,5 +7,5 @@ public interface IFileOperationsUtil
 {
     ValueTask Process(CancellationToken cancellationToken = default);
 
-    void DeleteAllExceptCsproj(string directoryPath, bool log = true);
+    ValueTask DeleteAllExceptCsproj(string directoryPath, bool log = true, CancellationToken cancellationToken = default);
 }

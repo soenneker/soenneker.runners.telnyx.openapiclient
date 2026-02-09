@@ -1,4 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging;
 using Soenneker.Extensions.String;
 using Soenneker.Extensions.ValueTask;
 using Soenneker.Git.Util.Abstract;
@@ -62,11 +62,11 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         string srcDirectory = Path.Combine(gitDirectory, "src");
 
-        DeleteAllExceptCsproj(srcDirectory);
+        await DeleteAllExceptCsproj(srcDirectory, cancellationToken: cancellationToken).NoSync();
 
         await _processUtil.Start("dotnet", null, "tool update --global Microsoft.OpenApi.Kiota", waitForExit: true, cancellationToken: cancellationToken);
 
-       await _openApiFixer.GenerateKiota(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
+        await _openApiFixer.GenerateKiota(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
 
         await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
@@ -122,7 +122,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         }
     }
 
-    public void DeleteAllExceptCsproj(string directoryPath, bool log = true)
+    public async ValueTask DeleteAllExceptCsproj(string directoryPath, bool log = true, CancellationToken cancellationToken = default)
     {
         if (!Directory.Exists(directoryPath))
         {
@@ -139,7 +139,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
                 {
                     try
                     {
-                        File.Delete(file);
+                        await _fileUtil.Delete(file, ignoreMissing: true, log: log, cancellationToken).NoSync();
                         if (log)
                             _logger.LogInformation("Deleted file: {FilePath}", file);
                     }
