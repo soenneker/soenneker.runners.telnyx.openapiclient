@@ -6,6 +6,7 @@ using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 using Soenneker.Utils.Dotnet.Abstract;
 using Soenneker.Utils.Environment;
+using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Download.Abstract;
 using Soenneker.Utils.Process.Abstract;
@@ -30,9 +31,10 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     private readonly IFileDownloadUtil _fileDownloadUtil;
     private readonly IFileUtil _fileUtil;
     private readonly IUsingsUtil _usingsUtil;
+    private readonly IDirectoryUtil _directoryUtil;
 
     public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IProcessUtil processUtil,
-        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtil fileUtil, IUsingsUtil usingsUtil)
+        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtil fileUtil, IUsingsUtil usingsUtil, IDirectoryUtil directoryUtil)
     {
         _logger = logger;
         _gitUtil = gitUtil;
@@ -42,6 +44,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         _fileDownloadUtil = fileDownloadUtil;
         _fileUtil = fileUtil;
         _usingsUtil = usingsUtil;
+        _directoryUtil = directoryUtil;
     }
 
     public async ValueTask Process(CancellationToken cancellationToken = default)
@@ -93,9 +96,10 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         ];
 
         // Search for the file in the directory
-        string[] files = Directory.GetFiles(directory, fileName, SearchOption.AllDirectories);
+        List<string> allFiles = await _directoryUtil.GetFilesByExtension(directory, "", true, cancellationToken);
+        List<string> files = allFiles.Where(f => Path.GetFileName(f) == fileName).ToList();
 
-        if (files.Length == 0)
+        if (files.Count == 0)
         {
             _logger.LogWarning("File '{FileName}' not found in directory '{Directory}'.", fileName, directory);
             return;
