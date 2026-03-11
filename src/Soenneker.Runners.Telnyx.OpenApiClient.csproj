@@ -47,7 +47,7 @@
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.4" />
         <PackageReference Include="Soenneker.Managers.Runners" Version="4.0.1929" />
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.168" />
-        <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1508" />
+        <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1509" />
         <PackageReference Include="Soenneker.Utils.Usings" Version="4.0.188" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
