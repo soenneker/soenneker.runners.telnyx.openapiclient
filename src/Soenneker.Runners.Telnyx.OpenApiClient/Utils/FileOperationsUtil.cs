@@ -63,7 +63,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _openApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
 
-        string srcDirectory = Path.Combine(gitDirectory, "src");
+        string srcDirectory = Path.Combine(gitDirectory, "src", Constants.Library);
 
         await DeleteAllExceptCsproj(srcDirectory, cancellationToken: cancellationToken).NoSync();
 
@@ -73,7 +73,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
-        string projFilePath = Path.Combine(gitDirectory, "src", $"{Constants.Library}.csproj");
+        string projFilePath = Path.Combine(gitDirectory, "src", Constants.Library, $"{Constants.Library}.csproj");
 
         await _dotnetUtil.Restore(projFilePath, cancellationToken: cancellationToken);
 
@@ -184,7 +184,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
     private async ValueTask BuildAndPush(string gitDirectory, CancellationToken cancellationToken)
     {
-        string projFilePath = Path.Combine(gitDirectory, "src", $"{Constants.Library}.csproj");
+        string projFilePath = Path.Combine(gitDirectory, "src", Constants.Library, $"{Constants.Library}.csproj");
 
         await _dotnetUtil.Restore(projFilePath, cancellationToken: cancellationToken);
 
