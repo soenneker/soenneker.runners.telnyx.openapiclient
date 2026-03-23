@@ -79,7 +79,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _usingsUtil.AddMissing(projFilePath, true, 5, cancellationToken);
 
-        await GuidPatternFixer.FixDirectoryAsync(srcDirectory, _directoryUtil, cancellationToken).NoSync();
+        await GuidPatternFixer.FixDirectoryAsync(srcDirectory, _directoryUtil, _fileUtil, cancellationToken).NoSync();
 
         await BuildAndPush(gitDirectory, cancellationToken).NoSync();
     }

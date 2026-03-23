@@ -1,11 +1,11 @@
 using System.Collections.Generic;
-using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Soenneker.Utils.Directory.Abstract;
+using Soenneker.Utils.File.Abstract;
 
 public static class GuidPatternFixer
 {
@@ -13,19 +13,20 @@ public static class GuidPatternFixer
     /// Scans all C# files under <paramref name="srcRoot"/>, finds any
     /// ...AsList() is List of Guid patterns and rewrites them to List of Guid?.
     /// </summary>
-    public static async ValueTask FixDirectoryAsync(string srcRoot, IDirectoryUtil directoryUtil, CancellationToken cancellationToken = default)
+    public static async ValueTask FixDirectoryAsync(string srcRoot, IDirectoryUtil directoryUtil, IFileUtil fileUtil,
+        CancellationToken cancellationToken = default)
     {
         if (!(await directoryUtil.Exists(srcRoot, cancellationToken))) return;
         List<string> paths = await directoryUtil.GetFilesByExtension(srcRoot, "cs", true, cancellationToken);
         foreach (string path in paths)
         {
-            string text = await File.ReadAllTextAsync(path, cancellationToken);
+            string text = await fileUtil.Read(path, log: false, cancellationToken);
             SyntaxTree tree = CSharpSyntaxTree.ParseText(text);
             SyntaxNode root = await tree.GetRootAsync(cancellationToken);
             var rewriter = new PatternRewriter();
             SyntaxNode newRoot = rewriter.Visit(root);
             if (newRoot != null && !newRoot.IsEquivalentTo(root))
-                await File.WriteAllTextAsync(path, newRoot.ToFullString(), cancellationToken);
+                await fileUtil.Write(path, newRoot.ToFullString(), log: false, cancellationToken);
         }
     }
 
