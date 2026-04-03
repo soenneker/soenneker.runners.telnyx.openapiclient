@@ -72,7 +72,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _kiotaUtil.EnsureInstalled(cancellationToken);
 
-        await _openApiFixer.GenerateKiota(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
+        await _kiotaUtil.Generate(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
 
         await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
