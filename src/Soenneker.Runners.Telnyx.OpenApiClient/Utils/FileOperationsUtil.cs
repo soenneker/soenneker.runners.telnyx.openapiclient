@@ -74,7 +74,7 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _kiotaUtil.Generate(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
 
-        await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
+       // await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
         string projFilePath = Path.Combine(gitDirectory, "src", Constants.Library, $"{Constants.Library}.csproj");
 
@@ -88,46 +88,46 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     }
 
     // Needed because of bug in Kiota
-    public async ValueTask FixLoopcountNamespaces(string directory, CancellationToken cancellationToken = default)
-    {
-        const string fileName = "Loopcount.cs";
+    //public async ValueTask FixLoopcountNamespaces(string directory, CancellationToken cancellationToken = default)
+    //{
+    //    const string fileName = "Loopcount.cs";
 
-        string[] requiredNamespaces =
-        [
-            "using System;",
-            "using System.Collections.Generic;"
-        ];
+    //    string[] requiredNamespaces =
+    //    [
+    //        "using System;",
+    //        "using System.Collections.Generic;"
+    //    ];
 
-        // Search for the file in the directory
-        List<string> allFiles = await _directoryUtil.GetFilesByExtension(directory, "", true, cancellationToken);
-        List<string> files = allFiles.Where(f => Path.GetFileName(f) == fileName).ToList();
+    //    // Search for the file in the directory
+    //    List<string> allFiles = await _directoryUtil.GetFilesByExtension(directory, "", true, cancellationToken);
+    //    List<string> files = allFiles.Where(f => Path.GetFileName(f) == fileName).ToList();
 
-        if (files.Count == 0)
-        {
-            _logger.LogWarning("File '{FileName}' not found in directory '{Directory}'.", fileName, directory);
-            return;
-        }
+    //    if (files.Count == 0)
+    //    {
+    //        _logger.LogWarning("File '{FileName}' not found in directory '{Directory}'.", fileName, directory);
+    //        return;
+    //    }
 
-        string filePath = files[0]; // Assuming only one Loopcount.cs file
-        List<string> lines = await _fileUtil.ReadAsLines(filePath, true, cancellationToken);
+    //    string filePath = files[0]; // Assuming only one Loopcount.cs file
+    //    List<string> lines = await _fileUtil.ReadAsLines(filePath, true, cancellationToken);
 
-        // Check if any required namespaces are missing
-        bool needsUpdate = requiredNamespaces.Any(ns => !lines.Contains(ns));
+    //    // Check if any required namespaces are missing
+    //    bool needsUpdate = requiredNamespaces.Any(ns => !lines.Contains(ns));
 
-        if (needsUpdate)
-        {
-            _logger.LogInformation("Updating namespaces in {FilePath}...", filePath);
-            string updatedContent = string.Join(Environment.NewLine, requiredNamespaces) + Environment.NewLine + string.Join(Environment.NewLine, lines);
+    //    if (needsUpdate)
+    //    {
+    //        _logger.LogInformation("Updating namespaces in {FilePath}...", filePath);
+    //        string updatedContent = string.Join(Environment.NewLine, requiredNamespaces) + Environment.NewLine + string.Join(Environment.NewLine, lines);
 
-            await _fileUtil.Write(filePath, updatedContent, true, cancellationToken);
+    //        await _fileUtil.Write(filePath, updatedContent, true, cancellationToken);
 
-            _logger.LogInformation("Namespaces added successfully to {FilePath}.", filePath);
-        }
-        else
-        {
-            _logger.LogInformation("All required namespaces are already present in {FilePath}.", filePath);
-        }
-    }
+    //        _logger.LogInformation("Namespaces added successfully to {FilePath}.", filePath);
+    //    }
+    //    else
+    //    {
+    //        _logger.LogInformation("All required namespaces are already present in {FilePath}.", filePath);
+    //    }
+    //}
 
     public async ValueTask DeleteAllExceptCsproj(string directoryPath, bool log = true, CancellationToken cancellationToken = default)
     {
