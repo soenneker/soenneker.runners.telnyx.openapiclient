@@ -48,7 +48,7 @@
         <PackageReference Include="Soenneker.Kiota.Util" Version="4.0.9" />
         <PackageReference Include="Soenneker.Managers.Runners" Version="4.0.2046" />
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.226" />
-        <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1561" />
+        <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1562" />
         <PackageReference Include="Soenneker.Utils.Usings" Version="4.0.211" />
         <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all">
           <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
