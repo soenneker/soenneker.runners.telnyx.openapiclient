@@ -1,28 +1,27 @@
-﻿using Soenneker.Facts.Local;
+using Soenneker.Tests.Attributes.Local;
 using Soenneker.OpenApi.Fixer.Abstract;
-using Soenneker.Tests.FixturedUnit;
+using Soenneker.Tests.HostedUnit;
 using Soenneker.Utils.File.Abstract;
 using System.Threading.Tasks;
 using Soenneker.Facts.Manual;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
-using Xunit;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Tests;
 
-[Collection("Collection")]
-public class TelnyxOpenApiClientTests : FixturedUnitTest
+[ClassDataSource<Host>(Shared = SharedType.PerTestSession)]
+public class TelnyxOpenApiClientTests : HostedUnitTest
 {
-    public TelnyxOpenApiClientTests(Fixture fixture, ITestOutputHelper output) : base(fixture, output)
+    public TelnyxOpenApiClientTests(Host host) : base(host)
     {
     }
 
-    [Fact]
+    [Test]
     public void Default()
     {
     }
 
     [ManualFact]
-    // [LocalFact]
+    // [LocalOnly]
     public async ValueTask Fix()
     {
         var fixer = Resolve<IOpenApiFixer>(true);
