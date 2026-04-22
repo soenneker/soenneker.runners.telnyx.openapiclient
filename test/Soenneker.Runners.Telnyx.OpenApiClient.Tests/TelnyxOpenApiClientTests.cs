@@ -3,7 +3,6 @@ using Soenneker.OpenApi.Fixer.Abstract;
 using Soenneker.Tests.HostedUnit;
 using Soenneker.Utils.File.Abstract;
 using System.Threading.Tasks;
-using Soenneker.Facts.Manual;
 using Soenneker.Runners.Telnyx.OpenApiClient.Utils.Abstract;
 
 namespace Soenneker.Runners.Telnyx.OpenApiClient.Tests;
@@ -20,7 +19,7 @@ public class TelnyxOpenApiClientTests : HostedUnitTest
     {
     }
 
-    [ManualFact]
+    [Skip("Manual")]
     // [LocalOnly]
     public async ValueTask Fix()
     {
