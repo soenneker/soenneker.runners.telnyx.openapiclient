@@ -10,8 +10,6 @@ using Soenneker.Utils.Environment;
 using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
 using Soenneker.Utils.File.Download.Abstract;
-using Soenneker.Utils.Process.Abstract;
-using Soenneker.Utils.Usings.Abstract;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -27,26 +25,22 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
     private readonly ILogger<FileOperationsUtil> _logger;
     private readonly IGitUtil _gitUtil;
     private readonly IDotnetUtil _dotnetUtil;
-    private readonly IProcessUtil _processUtil;
     private readonly IKiotaUtil _kiotaUtil;
     private readonly IOpenApiFixer _openApiFixer;
     private readonly IFileDownloadUtil _fileDownloadUtil;
     private readonly IFileUtil _fileUtil;
-    private readonly IUsingsUtil _usingsUtil;
     private readonly IDirectoryUtil _directoryUtil;
 
-    public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IProcessUtil processUtil,
-        IOpenApiFixer openApiFixer, IFileDownloadUtil fileDownloadUtil, IFileUtil fileUtil, IUsingsUtil usingsUtil, IDirectoryUtil directoryUtil, IKiotaUtil kiotaUtil)
+    public FileOperationsUtil(ILogger<FileOperationsUtil> logger, IGitUtil gitUtil, IDotnetUtil dotnetUtil, IOpenApiFixer openApiFixer,
+        IFileDownloadUtil fileDownloadUtil, IFileUtil fileUtil, IDirectoryUtil directoryUtil, IKiotaUtil kiotaUtil)
     {
         _logger = logger;
         _gitUtil = gitUtil;
         _dotnetUtil = dotnetUtil;
-        _processUtil = processUtil;
         _kiotaUtil = kiotaUtil;
         _openApiFixer = openApiFixer;
         _fileDownloadUtil = fileDownloadUtil;
         _fileUtil = fileUtil;
-        _usingsUtil = usingsUtil;
         _directoryUtil = directoryUtil;
     }
 
@@ -74,13 +68,11 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
 
         await _kiotaUtil.Generate(fixedFilePath, "TelnyxOpenApiClient", Constants.Library, gitDirectory, cancellationToken).NoSync();
 
-       // await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
+        // await FixLoopcountNamespaces(srcDirectory, cancellationToken).NoSync();
 
         string projFilePath = Path.Combine(gitDirectory, "src", Constants.Library, $"{Constants.Library}.csproj");
 
         await _dotnetUtil.Restore(projFilePath, cancellationToken: cancellationToken);
-
-        await _usingsUtil.AddMissing(projFilePath, true, 5, cancellationToken);
 
         await GuidPatternFixer.FixDirectoryAsync(srcDirectory, _directoryUtil, _fileUtil, cancellationToken).NoSync();
 

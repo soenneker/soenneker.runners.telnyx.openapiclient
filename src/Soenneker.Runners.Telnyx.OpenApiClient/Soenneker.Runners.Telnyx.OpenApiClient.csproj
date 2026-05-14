@@ -41,15 +41,12 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
         <PackageReference Include="Soenneker.Extensions.LoggerConfiguration" Version="4.0.1254" />
         <PackageReference Include="Microsoft.Extensions.Hosting" Version="10.0.8" />
         <PackageReference Include="Soenneker.Kiota.Util" Version="4.0.23" />
         <PackageReference Include="Soenneker.Managers.Runners" Version="4.0.2120" />
         <PackageReference Include="Soenneker.OpenApi.Fixer" Version="4.0.237" />
         <PackageReference Include="Soenneker.Utils.File.Download" Version="4.0.1597" />
-        <PackageReference Include="Soenneker.Utils.Usings" Version="4.0.227" />
-        <PackageReference Include="Microsoft.Build.Framework" Version="18.4.0" ExcludeAssets="runtime" PrivateAssets="all">
-            <IncludeAssets>compile; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-        </PackageReference>
     </ItemGroup>
 </Project>
