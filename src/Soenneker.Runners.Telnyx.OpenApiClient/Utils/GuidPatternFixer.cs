@@ -7,6 +7,9 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Soenneker.Utils.Directory.Abstract;
 using Soenneker.Utils.File.Abstract;
 
+/// <summary>
+/// Represents the guid pattern fixer.
+/// </summary>
 public static class GuidPatternFixer
 {
     /// <summary>
