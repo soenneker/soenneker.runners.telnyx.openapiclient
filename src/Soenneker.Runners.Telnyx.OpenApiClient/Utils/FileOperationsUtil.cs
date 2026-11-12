@@ -14,6 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text.Json.Nodes;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -59,6 +60,11 @@ public sealed class FileOperationsUtil : IFileOperationsUtil
         string fixedFilePath = Path.Combine(gitDirectory, "fixed.json");
 
         await _openApiFixer.Fix(filePath, fixedFilePath, cancellationToken).NoSync();
+
+        JsonNode schema = JsonNode.Parse(await _fileUtil.Read(fixedFilePath, log: false, cancellationToken))
+            ?? throw new InvalidOperationException("The fixed Telnyx OpenAPI document is empty.");
+        NumberHealthMetricsSchemaFixer.Fix(schema);
+        await _fileUtil.Write(fixedFilePath, schema.ToJsonString(), log: false, cancellationToken);
 
         string srcDirectory = Path.Combine(gitDirectory, "src", Constants.Library);
 
